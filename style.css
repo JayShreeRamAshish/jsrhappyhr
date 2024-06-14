@@ -1,0 +1,10 @@
+/* style.css */
+body {
+    background-color: #f4f4f9;
+}
+
+.stButton button {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+}
