@@ -16,7 +16,7 @@ from fpdf import FPDF
 #import smtplib
 from fpdf import FPDF
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="HappyHR",page_icon="🧊",layout="wide",initial_sidebar_state="expanded")
