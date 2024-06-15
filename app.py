@@ -8,11 +8,11 @@ from io import BytesIO
 from fpdf import FPDF
 #from openpyxl import Workbook
 #from openpyxl.writer.excel import save_virtual_workbook
-from openpyxl.workbook.protection import WorkbookProtection
+#from openpyxl.workbook.protection import WorkbookProtection
 #import matplotlib.pyplot as plt
-from datetime import datetime
+#from datetime import datetime
 import json
-from email_validator import validate_email, EmailNotValidError
+#from email_validator import validate_email, EmailNotValidError
 #import smtplib
 from fpdf import FPDF
 import os
