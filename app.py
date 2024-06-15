@@ -24,7 +24,7 @@ st.set_page_config(page_title="HappyHR",page_icon="🧊",layout="wide",initial_s
 st.markdown('<style>{}</style>'.format(open('style.css').read()), unsafe_allow_html=True)
 
 # Load environment variables
-load_dotenv()
+#load_dotenv()
 
 # Create an engine
 engine = create_engine('sqlite:///app.db')
