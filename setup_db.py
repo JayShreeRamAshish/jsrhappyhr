@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,relationship
 from datetime import datetime
 from io import BytesIO
-import openpyxl
+#import openpyxl
 
 Base = declarative_base()
 
@@ -31,7 +31,9 @@ class Employee(Base):
     emaadhar = Column(String, nullable=False)
     emuan = Column(String, nullable=False)
     
-    rollouts = relationship('SurveyRollout', back_populates='employee')
+    #rollouts = relationship('SurveyRollout', back_populates='employees')
+    #salary_structures = relationship('SalaryStructure', back_populates='employees')
+
 
 class SalaryHead(Base):
     __tablename__ = 'salary_heads'
@@ -49,7 +51,8 @@ class SalaryStructure(Base):
     employee_id = Column(Integer, ForeignKey('employees.id'))
     salary_head_id = Column(Integer, ForeignKey('salary_heads.id'))
     value = Column(Integer)
-    
+    #employees = relationship('Employee', back_populates='salary_structures')
+    #salary_head = relationship('SalaryHead')  
 
 class Branch(Base):
     __tablename__ = 'branches'
@@ -80,7 +83,8 @@ class SurveyTemplate(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     form_structure = Column(String, nullable=False)
-    rollouts = relationship('SurveyRollout', back_populates='survey_template')
+    
+    #rollouts = relationship('SurveyRollout', back_populates='survey_template')
 
 class SurveyRollout(Base):
     __tablename__ = 'survey_rollouts'
@@ -91,8 +95,8 @@ class SurveyRollout(Base):
     date_of_submission = Column(DateTime, nullable=True)
     status = Column(Boolean, default=False)
     
-    survey_template = relationship('SurveyTemplate', back_populates='rollouts')
-    employee = relationship('Employee', back_populates='rollouts')
+    #survey_template = relationship('SurveyTemplate', back_populates='rollouts')
+    #employee = relationship('Employee', back_populates='rollouts')
     
 def setup_database():
     engine = create_engine('sqlite:///app.db')
