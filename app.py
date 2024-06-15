@@ -1,22 +1,23 @@
 import streamlit as st
-from sqlalchemy import create_engine,inspect,Column,Integer,String,DateTime,Boolean,ForeignKey
+from sqlalchemy import create_engine,inspect,Column,Integer,String,DateTime,Boolean,ForeignKey,func
 from sqlalchemy.orm import sessionmaker,relationship, declarative_base
 from setup_db import User,Employee,Base,SurveyTemplate,SurveyRollout,Branch,Department,Designation,Grade,SalaryStructure,SalaryHead
 import pandas as pd
 from io import BytesIO
-import xlsxwriter
+#import xlsxwriter
 from fpdf import FPDF
-from openpyxl import Workbook
+#from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.workbook.protection import WorkbookProtection
 import matplotlib.pyplot as plt
 from datetime import datetime
 import json
 from email_validator import validate_email, EmailNotValidError
-import smtplib
+#import smtplib
 from fpdf import FPDF
 import os
 from dotenv import load_dotenv
+from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="HappyHR",page_icon="🧊",layout="wide",initial_sidebar_state="expanded")
 
@@ -29,6 +30,27 @@ load_dotenv()
 engine = create_engine('sqlite:///app.db')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
+
+
+class Dashboard:
+    def __init__(self, session):
+        self.session = session
+
+    def card_1(self):
+        employee_count = self.session.query(Employee).count()
+        return employee_count
+
+    def card_2(self):
+        department_counts = self.session.query(Department.department_name, func.count(Employee.id)) \
+                                        .join(Employee, Employee.emdepartmentpid == Department.department_id) \
+                                        .group_by(Department.department_name) \
+                                        .all()
+        return department_counts
+
+# Example usage:
+# session = Session()
+# result = card_1(session)
+# session.close()
 
 class SalaryHeadManagement:
     def __init__(self, session):
@@ -138,34 +160,45 @@ class Masterddl:
         self.session.add(new_branch)
         self.session.commit()
         
-    def create_Department(self,session):
+    def View_Branch(self):
+        return self.session.query(Branch).all()
+    
+    def Edit_Branch(self,session):
+        pass
+    
+    def Delete_Branch(self,session):
+        pass
+    
+    def create_Department(self,department_code,department_name):
         new_department=Department(department_code=department_code,department_name=department_name)
         self.session.add(new_department)
         self.session.commit()
         
-    def create_Designation(self,session):
+    def VieweDepartment(self):
+        return self.session.query(Department).all()
+    
+    def EditeDepartment(self,session):
+        pass
+    
+    def create_Designation(self,designation_code,designation_name):
         new_designation=Designation(designation_code=designation_code,designation_name=designation_name)
         self.session.add(new_designation)
         self.session.commit()
         
-    def create_Grade(self,session):
-        pass
+    def ViewDesignation(self):
+        return self.session.query(Designation).all()
     
-    def View_Branch(self,session):
-        pass
-    def VieweDepartment(self,session):
-        pass
-    def ViewDesignation(self,session):
-        pass
-    def VieweGrade(self,session):
-        pass
+    def create_Grade(self,grade_code,grade_name):
+        new_grade=Grade(grade_code=grade_code,grade_name=grade_name)
+        self.session.add(new_grade)
+        self.session.commit()
     
-    def EditBranch(self,session):
-        pass
-    def EditeDepartment(self,session):
-        pass
+    def VieweGrade(self):
+        return self.session.query(Grade).all()
+    
     def EditeDesignation(self,session):
         pass
+    
     def EditGrade(self,session):
         pass
     
@@ -396,15 +429,52 @@ def main():
             session.close()
         return
 
-    st.sidebar.header("Happy-HR")
-    
-    menu=st.sidebar.selectbox("HappyHR",["Dashboard","Employee Central","Attendance","Payroll","Recruitment","PMS","eLearning","Data Central","Manage Users","Developer","Survey Builder"])
-
+    with st.sidebar:
+        selected = option_menu(
+        menu_title="HappyHR",
+        options=["Dashboard", "Employee Central", "Attendance", "Payroll", "Recruitment", "PMS", "eLearning", "Data Central", "Manage Users", "Developer", "Survey Builder"],
+        icons=["house", "person", "clock", "currency-dollar", "briefcase", "bar-chart", "book", "database", "people", "code-slash", "clipboard"],
+        menu_icon="cast",
+        default_index=0,
+        styles={
+            "container": {"padding": "0!important", "background-color": "#f7f9fc"},
+            "icon": {"color": "#2e7bcf", "font-size": "25px"},
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px", "--hover-color": "#eee"},
+            "nav-link-selected": {"background-color": "#2e7bcf", "color": "white"},
+        }
+    )
     session = Session()
+    if selected=="Dashboard":
+        my_dashboard = Dashboard(session)
+        card1_result = my_dashboard.card_1()  # Call the method without passing session again
+        
+        session.close()  # Close the session after all operations
+
+        # Print the result for Card 1
+        print("Card 1 (Number of Employees):", card1_result)
+        col1,col2,col3=st.columns(3)
+        # Display Card 1 in a styled container
+        #slider_value = st.slider('Select a value', 0, 100, 50)
+        with col1:
+            '''st.markdown("""
+                        <div class="card">
+                        <h3>Employee Count:()
+                        </h3><p style="font-size: 24px;"></p>".format(card1_result)</p>
+                        </div>""", 
+                        unsafe_allow_html=True)'''
+            '''st.markdown(
+                        """
+                        <div class="card">
+                        <p style='{}'>Number of Employees: <b>{}</b></p>
+                        </div>
+                        """.format({card1_result}), 
+                        unsafe_allow_html=True
+                        )'''
+
     
-    if menu=="Employee Central":
+    elif selected=="Employee Central":
         #st.title("Employee Database Central")
-        sub_menu = st.sidebar.selectbox("Select Submenu", ["View Employee","New Employee","Modify Employee","Master"])
+        sub_menu = st.selectbox("", ["View Employee","New Employee","Modify Employee","Master"])
         emp_mgmt = EmployeeManagement(session)
         col1,col2=st.columns([1,2])
 
@@ -505,59 +575,87 @@ def main():
                 col1,col2,col3,col4=st.columns(4)
                 mast_ddl=Masterddl(session)
                 with col1:
-                    ddlmenu=st.selectbox("Drop Down List",["Create New Branch","Create New Deparment","Create New Designation","Create New Grade"])
+                    st.subheader("Create Drop Down",divider=True)
+                    ddlmenu=st.selectbox("",["Create New Branch","Create New Deparment","Create New Designation","Create New Grade"])
                     
                     if ddlmenu=="Create New Branch":
-                        st.write("Create New Branch")
+                        #st.write("Create New Branch")
                         branch_code=st.text_input("Branch Code")
                         branch_name=st.text_input("Branch NAme")
+                        
                         if st.button("Create Branch"):
                             mast_ddl.create_Branch(branch_code,branch_name)
-                            st.write("Branch Created Sucessfully")
-                            
+                            st.success("Branch Created Sucessfully")
+                                     
                     if ddlmenu=="Create New Deparment":
-                        st.write("Create New Deparment")
+                        #st.write("Create New Deparment")
                         department_code=st.text_input("Department Code")
                         department_name=st.text_input("Department Name")
                         if st.button("Create Department"):
                             mast_ddl.create_Branch(department_code,department_name)
-                            st.write("Department Created Sucessfully")
+                            st.success("Department Created Sucessfully")
                             
                     if ddlmenu=="Create New Designation":
                         designation_code=st.text_input("Designation Code")
                         designation_name=st.text_input("Designation Name")
                         if st.button("Create Designation"):
                             mast_ddl.create_Designation(designation_code,designation_name)
-                            st.write("Designation Created Sucessfully")
+                            st.success("Designation Created Sucessfully")
                             
                     if ddlmenu=="Create New Grade":
-                        st.write("Create New Grade")
+                        #st.write("Create New Grade")
                         grade_code=st.text_input("Grade Code")
                         grade_name=st.text_input("Grade Name")
                         if st.button("Create Grade"):
                             mast_ddl.create_Grade(grade_code,grade_name)
-                            st.write("Grade Created Sucessfuly")
-                                
-                        
-                    
+                            st.success("Grade Created Sucessfuly")     
                 with col2:
-                    st.write("Create New Department")
-                    
+                    if ddlmenu=="Create New Branch":
+                        st.subheader("Branch",divider=True)
+                        branch_view=mast_ddl.View_Branch()
+                        branchdata=[{
+                        "Branch Code":brl.branch_code,
+                        "Branch Name":brl.branch_name,
+                        }for brl in branch_view]
+                        #df=pd.DataFrame(branchdata)
+                        #st.dataframe(df,use_container_width=True,hide_index=True)
+                        edited_df = pd.DataFrame(branchdata)
+                        st.data_editor(edited_df, use_container_width=True, num_rows="dynamic")
                         
-                    st.write("View Department")
-                    st.write("Edit Department")
-                    
-                with col3:
-                    st.write("Create New Designation")
-                    st.write("View Designation")
-                    st.write("Edit Designation")
-                    
-                with col4:
-                    st.write("Create New Grade")
-                    st.write("View Grade")
-                    st.write("Edit Grade")
-                    
-    elif menu == "Manage Users":
+                    if st.button("Save Changes"):
+                            (edited_df)
+                            st.success("Changes saved successfully")
+                    elif ddlmenu=="Create New Deparment":
+                        st.subheader("Department",divider=True)
+                        department_view=mast_ddl.VieweDepartment()
+                        departmentdata=[{
+                        "Department Code":dpl.department_code,
+                        "Department Name":dpl.department_name,
+                        }for dpl in department_view]
+                        df=pd.DataFrame(departmentdata)
+                        st.dataframe(df,use_container_width=True,hide_index=True)
+                        
+                    elif ddlmenu=="Create New Designation":
+                        st.subheader("Designation",divider=True)
+                        designation_view=mast_ddl.ViewDesignation()
+                        designationdata=[{
+                        "Designation Code":dsl.designation_code,
+                        "Designation Name":dsl.designation_name,
+                        }for dsl in designation_view]
+                        df=pd.DataFrame(designationdata)
+                        st.dataframe(df,use_container_width=True,hide_index=True)
+                        
+                    elif ddlmenu=="Create New Grade":
+                        st.subheader("Grade",divider=True)
+                        grade_view=mast_ddl.VieweGrade()
+                        gradedata=[{
+                        "Grade Code":grl.grade_code,
+                        "Grade Name":grl.grade_name,
+                        }for grl in grade_view]
+                        df=pd.DataFrame(gradedata)
+                        st.dataframe(df,use_container_width=True,hide_index=True)              
+    
+    elif selected == "Manage Users":
         st.subheader("User Management")
         sub_menu = st.sidebar.selectbox("Select Submenu", ["Create User", "View Users", "Modify User"])
         user_mgmt = UserManagement(session)
@@ -581,12 +679,12 @@ def main():
                     user_mgmt.modify_user(user_id, username, password)
                     st.success("User modified successfully")
                     
-    elif menu=="Payroll":
-        st.subheader("Salary Stucture")
+    elif selected=="Payroll":
+        #st.subheader("Salary Stucture")
         salary_head_mgmt = SalaryHeadManagement(session)
         salary_structure_mgmt = SalaryStructureManagement(session)
-        sub_menu=st.sidebar.selectbox("Select Menu", ["Create Salary Head", "View Salary Heads", "Salary Structure", "View and Update Employee Salary Structure", "Import/Export Salary Structure"])
-        st.title("Salary Structure Management")
+        sub_menu=st.selectbox("Select Menu", ["Create Salary Head", "View Salary Heads", "Salary Structure", "View and Update Employee Salary Structure", "Import/Export Salary Structure"])
+        st.title("Salary Structure")
         existing_structure = salary_structure_mgmt.get_salary_structure(employee_id)
         existing_head_ids = [structure.salary_head_id for structure in existing_structure]
         
@@ -635,7 +733,7 @@ def main():
                 salary_structure_mgmt.create_salary_structure(employee_id, selected_head_ids)
             st.success("Salary Structure saved successfully")
 
-        elif sub_menu == "View and Update Employee Salary Structure":
+        '''elif sub_menu == "View and Update Employee Salary Structure":
             st.subheader("View and Update Employee Salary Structure")
             employee_id = st.number_input("Employee ID", min_value=1)
             if st.button("Load Employee Salary Structure"):
@@ -648,9 +746,9 @@ def main():
 
             if st.button("Update Salary Structure"):
                 salary_structure_mgmt.update_salary_structure(employee_id, head_values)
-                st.success("Salary Structure updated successfully")
+                st.success("Salary Structure updated successfully")'''
 
-        elif sub_menu == "Import/Export Salary Structure":
+        '''elif sub_menu == "Import/Export Salary Structure":
             st.subheader("Import/Export Salary Structure")
 
             st.subheader("Export")
@@ -666,15 +764,16 @@ def main():
             uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
             if uploaded_file is not None:
                 salary_structure_mgmt.import_salary_structure_from_excel(uploaded_file)
-                st.success("Salary Structure imported successfully")
+                st.success("Salary Structure imported successfully")'''
 
 
 
 # Streamlit part
 
 
-    elif menu == "Developer":
+    elif selected == "Developer":
         st.subheader("Support")
+        col1,col2=st.columns(2)
         sub_menu = st.sidebar.selectbox("Select Submenu", ["SQL Support", "Report Builder", "Dashboard Builder","Survey Builder"])
     
         if sub_menu == "SQL Support":
@@ -778,7 +877,7 @@ def main():
                     st.image(graph, caption=graph_title, use_column_width=True)
             else:
                 st.write("No graphs available")
-    elif menu=="Survey Builder":
+    elif selected=="Survey Builder":
         st.subheader("SUrvey Biolder")
         sub_menu = st.sidebar.selectbox("Select Submenu", ["Create Survey", "Rollout Survey", "Survey Results"])    
         if sub_menu == "Create Survey":
