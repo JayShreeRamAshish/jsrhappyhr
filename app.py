@@ -9,7 +9,7 @@ from fpdf import FPDF
 #from openpyxl import Workbook
 #from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.workbook.protection import WorkbookProtection
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from datetime import datetime
 import json
 from email_validator import validate_email, EmailNotValidError
