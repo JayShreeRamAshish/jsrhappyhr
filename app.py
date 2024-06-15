@@ -46,6 +46,13 @@ class Dashboard:
                                         .group_by(Department.department_name) \
                                         .all()
         return department_counts
+    
+    def card_3(self):
+        designation_counts = self.session.query(Designation.designation_name, func.count(Employee.id)) \
+                                        .join(Employee, Employee.emdesignationpid == Designation.designation_id) \
+                                        .group_by(Designation.designation_name) \
+                                        .all()
+        return designation_counts
 
 # Example usage:
 # session = Session()
@@ -447,6 +454,8 @@ def main():
     if selected=="Dashboard":
         my_dashboard = Dashboard(session)
         card1_result = my_dashboard.card_1()  # Call the method without passing session again
+        card2_result = my_dashboard.card_2()
+        card3_result = my_dashboard.card_3()
         
         session.close()  # Close the session after all operations
 
@@ -456,21 +465,32 @@ def main():
         # Display Card 1 in a styled container
         #slider_value = st.slider('Select a value', 0, 100, 50)
         with col1:
-            '''st.markdown("""
-                        <div class="card">
-                        <h3>Employee Count:()
-                        </h3><p style="font-size: 24px;"></p>".format(card1_result)</p>
-                        </div>""", 
-                        unsafe_allow_html=True)'''
-            '''st.markdown(
-                        """
-                        <div class="card">
-                        <p style='{}'>Number of Employees: <b>{}</b></p>
-                        </div>
-                        """.format({card1_result}), 
-                        unsafe_allow_html=True
-                        )'''
-
+            st.markdown(
+    """
+    <div class="card">
+        <p style='{}'>Current Employee: <b>{}</b></p>
+    </div>
+    """.format(card1_result,card1_result), 
+    unsafe_allow_html=True
+)
+        with col2:   
+            st.markdown(
+    """
+    <div class="card">
+        <p style='{}'>Current Department Count: <b>{}</b></p>
+    </div>
+    """.format(card2_result,card2_result), 
+    unsafe_allow_html=True
+    )
+        with col3:   
+            st.markdown(
+    """
+    <div class="card">
+        <p style='{}'>Current Designation Count: <b>{}</b></p>
+    </div>
+    """.format(card3_result,card3_result), 
+    unsafe_allow_html=True
+    )
     
     elif selected=="Employee Central":
         #st.title("Employee Database Central")
